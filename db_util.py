@@ -1,17 +1,9 @@
-from flask.ext.sqlalchemy import SQLAlchemy
-import os
+from models import Book
 from manage import app
+from manage import db
+import os
 
-db = SQLAlchemy(app)
 init_db()
-
-class Book(db.Model):
-	__tablename__ = "books"
-	id = db.Column(db.Integer, primary_key = True)
-	name = db.Column(db.String, nullable = False)
-
-	def __repr__(self):
-		return "<Book %s>" % self.name
 
 def init_db():
 	basedir = os.path.abspath(os.path.dirname(__file__))
