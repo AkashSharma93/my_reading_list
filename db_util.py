@@ -1,8 +1,9 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
-from DataServer import app
+from manage import app
 
 db = SQLAlchemy(app)
+init_db()
 
 class Book(db.Model):
 	__tablename__ = "books"
