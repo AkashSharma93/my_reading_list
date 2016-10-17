@@ -16,6 +16,8 @@ def add_book(book_json):
 	db.session.add(book)
 	db.session.commit()
 
+	return book
+
 
 def get_book(book_id):
 	return Book.query.filter_by(id = book_id).first()
@@ -32,15 +34,24 @@ def get_books_by_filter(book_name = None):
 
 def remove_book(book_id):
 	book = get_book(book_id)
+	if book is None:
+		return None
 	db.session.delete(book)
 	db.session.commit()
 
+	return book
 
-def update_book(book_id, book_name):
+
+def update_book(book_id, book_json):
 	book = get_book(book_id)
-	book.book_name = book_name
+	if book is None:
+		return None
+
+	book.book_name = book_json["book_name"]
 	db.session.add(book)
 	db.session.commit()
+
+	return book
 
 
 init_db()
