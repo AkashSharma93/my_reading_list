@@ -1,5 +1,6 @@
 from manage import db
 
+
 class Book(db.Model):
 	__tablename__ = "books"
 	id = db.Column(db.Integer, primary_key = True)
