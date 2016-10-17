@@ -11,9 +11,8 @@ def init_db():
 	db.create_all()
 
 
-def add_book(book_name):
-	# Parse this json first.
-	book = Book(name=book_name)
+def add_book(book_json):
+	book = Book(book_name = book_json["book_name"])
 	db.session.add(book)
 	db.session.commit()
 
@@ -25,7 +24,7 @@ def get_book(book_id):
 def get_books_by_filter(book_name = None):
 	query_obj = Book.query
 	if book_name is not None:
-		query_obj = query_obj.filter_by(name = book_name)
+		query_obj = query_obj.filter_by(book_name = book_name)
 	# If more filters, use filter_by again.
 
 	return query_obj.all()
@@ -39,7 +38,7 @@ def remove_book(book_id):
 
 def update_book(book_id, book_name):
 	book = get_book(book_id)
-	book.name = book_name
+	book.book_name = book_name
 	db.session.add(book)
 	db.session.commit()
 
