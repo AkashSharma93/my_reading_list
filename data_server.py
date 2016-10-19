@@ -2,6 +2,7 @@ from flask import request
 from flask import abort
 from flask import redirect
 from flask import Blueprint
+from flask import json
 
 
 main_blueprint = Blueprint("main", __name__)
@@ -12,7 +13,10 @@ def get_book(book_id):
 	book = db_util.get_book(book_id)
 	if book is None:
 		abort(404)
-	return "Getting book: " + book.book_name, 200
+	
+	#Temporary solution
+	json_data = json.dumps({"book_id": book.id, "book_name": book.book_name})
+	return json_data, 200
 
 
 @main_blueprint.route("/api/book", methods = ["POST"])
