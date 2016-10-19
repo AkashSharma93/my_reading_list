@@ -5,10 +5,13 @@ from manage import db
 import os
 
 
-def init_db():
+def init_db(run_type = ""):
 	basedir = os.path.abspath(os.path.dirname(__file__))
-	app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(basedir, "data.sqlite")
+	app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(basedir, "data_" + run_type + ".sqlite")
 	db.create_all()
+
+def drop_tables():
+	db.drop_all()
 
 
 def add_book(book_json):
