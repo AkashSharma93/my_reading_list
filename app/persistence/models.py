@@ -1,4 +1,4 @@
-from manage import db
+from . import db
 
 
 class Book(db.Model):
