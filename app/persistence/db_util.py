@@ -1,14 +1,13 @@
-from models import Book
-from manage import app
-from manage import db
-
 import os
 
+from .models import Book
+from . import db
 
-def init_db(run_type = ""):
+
+def init_db():
 	basedir = os.path.abspath(os.path.dirname(__file__))
-	app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(basedir, "data_" + run_type + ".sqlite")
 	db.create_all()
+
 
 def drop_tables():
 	db.drop_all()
@@ -55,7 +54,3 @@ def update_book(book_id, book_json):
 	db.session.commit()
 
 	return book
-
-
-init_db()
-
