@@ -22,6 +22,4 @@ def create_app(config_name):
 	from .api import api_blueprint
 	app.register_blueprint(api_blueprint)
 
-	print "Registered blueprints"
-
 	return app
