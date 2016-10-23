@@ -25,6 +25,10 @@ def get_book(book_id):
 	return Book.query.filter_by(id = book_id).first()
 
 
+def get_all_books():
+	return Book.query.all()
+
+
 def get_books_by_filter(book_name = None):
 	query_obj = Book.query
 	if book_name is not None:

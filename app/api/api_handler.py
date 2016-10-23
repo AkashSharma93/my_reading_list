@@ -42,3 +42,17 @@ def delete_book(book_id):
 
 	json_data = json.dumps({"book_id": book.id, "book_name": book.book_name})
 	return json_data, 200
+
+
+@api_blueprint.route("/api/books", methods = ["GET"])
+def get_all_books():
+	books = db_util.get_all_books()
+	book_list = []
+	for book in books:
+		book_dict = {}
+		book_dict["id"] = book.id
+		book_dict["book_name"] = book.book_name
+		book_list.append(book_dict)
+	
+	json_data = json.dumps(book_list)
+	return json_data, 200
