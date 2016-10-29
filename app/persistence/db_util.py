@@ -15,6 +15,11 @@ def drop_tables():
 
 def add_book(book_json):
 	book = Book(book_name = book_json["book_name"])
+	if "author_name" in book_json:
+		book.author_name = book_json["author_name"]
+	if "comments" in book_json:
+		book.comments = book_json["comments"]
+
 	db.session.add(book)
 	db.session.commit()
 
@@ -53,7 +58,13 @@ def update_book(book_id, book_json):
 	if book is None:
 		return None
 
-	book.book_name = book_json["book_name"]
+	if "book_name" in book_json:
+		book.book_name = book_json["book_name"]
+	if "author_name" in book_json:
+		book.author_name = book_json["author_name"]
+	if "comments" in book_json:
+		book.comments = book_json["comments"]
+
 	db.session.add(book)
 	db.session.commit()
 
