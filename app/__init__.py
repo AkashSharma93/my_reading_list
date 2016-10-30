@@ -22,7 +22,10 @@ def create_app(config_name):
 	from .api import api_blueprint
 	app.register_blueprint(api_blueprint, url_prefix = "/api")
 
-	from .auth import auth_blueprint
-	app.register_blueprint(auth_blueprint, url_prefix = "/auth")
+	from .auth import ui_auth_blueprint
+	app.register_blueprint(ui_auth_blueprint, url_prefix = "/auth/ui")
+
+	from .auth import api_auth_blueprint
+	app.register_blueprint(api_auth_blueprint, url_prefix = "/auth/api")
 
 	return app

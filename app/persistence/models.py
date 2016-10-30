@@ -46,3 +46,16 @@ class User(UserMixin, db.Model):
 
 	def verify_password(self, password):
 		return check_password_hash(self.password_hash, password)
+	
+	def __repr__(self):
+		return "<User %s>" % self.username
+
+	def to_json(self):
+		user_dict = {
+			"id": self.id,
+			"email": self.email,
+			"username": self.username,
+		}
+		json_data = json.dumps(user_dict)
+
+		return json_data

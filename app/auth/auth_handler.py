@@ -1,6 +1,15 @@
-from . import auth_blueprint
+from ..persistence.models import User
+from ..persistence import db
 
 
-@auth_blueprint.route("/login")
-def login():
-	return "You are in login route now."
+def register(user_json):
+	email = user_json["email"]
+	username = user_json["username"]
+	password = user_json["password"]
+
+	user = User(email = email, username = username, password = password)
+
+	db.session.add(user)
+	db.session.commit()
+
+	return user
