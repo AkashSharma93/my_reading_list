@@ -20,6 +20,9 @@ def create_app(config_name):
 	app.register_blueprint(ui_blueprint)
 	
 	from .api import api_blueprint
-	app.register_blueprint(api_blueprint)
+	app.register_blueprint(api_blueprint, url_prefix = "/api")
+
+	from .auth import auth_blueprint
+	app.register_blueprint(auth_blueprint, url_prefix = "/auth")
 
 	return app
