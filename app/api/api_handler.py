@@ -4,7 +4,7 @@ from . import api_blueprint
 from ..persistence import db_util
 
 
-@api_blueprint.route("/api/books/<int:book_id>")
+@api_blueprint.route("/books/<int:book_id>")
 def get_book(book_id):
 	book = db_util.get_book(book_id)
 	if book is None:
@@ -15,7 +15,7 @@ def get_book(book_id):
 	return json_data, 200
 
 
-@api_blueprint.route("/api/books", methods = ["POST"])
+@api_blueprint.route("/books", methods = ["POST"])
 def add_book():
 	data = request.get_json()
 	book = db_util.add_book(data)
@@ -23,7 +23,7 @@ def add_book():
 	return json_data, 200
 
 
-@api_blueprint.route("/api/books/<int:book_id>", methods = ["PUT"])
+@api_blueprint.route("/books/<int:book_id>", methods = ["PUT"])
 def update_book(book_id):
 	data = request.get_json()
 	book = db_util.update_book(book_id, data)
@@ -34,7 +34,7 @@ def update_book(book_id):
 	return json_data, 200
 
 
-@api_blueprint.route("/api/books/<int:book_id>", methods = ["DELETE"])
+@api_blueprint.route("/books/<int:book_id>", methods = ["DELETE"])
 def delete_book(book_id):
 	book = db_util.remove_book(book_id)
 	if book is None:
@@ -44,7 +44,7 @@ def delete_book(book_id):
 	return json_data, 200
 
 
-@api_blueprint.route("/api/books", methods = ["GET"])
+@api_blueprint.route("/books", methods = ["GET"])
 def get_all_books():
 	books = db_util.get_all_books()
 	books_dict = {
