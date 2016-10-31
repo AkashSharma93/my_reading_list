@@ -6,50 +6,91 @@ from ..persistence import db_util
 
 @api_blueprint.route("/books/<int:book_id>")
 def get_book(book_id):
-	book = db_util.get_book(book_id)
-	if book is None:
-		abort(404)
-	
-	#Temporary solution
-	json_data = book.to_json()
-	return json_data, 200
+    book = db_util.get_book(book_id)
+    if book is None:
+        abort(404)
+
+    json_data = book.to_json()
+    return json_data, 200
 
 
-@api_blueprint.route("/books", methods = ["POST"])
+@api_blueprint.route("/books", methods=["POST"])
 def add_book():
-	data = request.get_json()
-	book = db_util.add_book(data)
-	json_data = book.to_json()
-	return json_data, 200
+    data = request.get_json()
+    book = db_util.add_book(data)
+    json_data = book.to_json()
+    return json_data, 200
 
 
-@api_blueprint.route("/books/<int:book_id>", methods = ["PUT"])
+@api_blueprint.route("/books/<int:book_id>", methods=["PUT"])
 def update_book(book_id):
-	data = request.get_json()
-	book = db_util.update_book(book_id, data)
-	if book is None:
-		abort(404)
-	
-	json_data = book.to_json()
-	return json_data, 200
+    data = request.get_json()
+    book = db_util.update_book(book_id, data)
+    if book is None:
+        abort(404)
+
+    json_data = book.to_json()
+    return json_data, 200
 
 
-@api_blueprint.route("/books/<int:book_id>", methods = ["DELETE"])
+@api_blueprint.route("/books/<int:book_id>", methods=["DELETE"])
 def delete_book(book_id):
-	book = db_util.remove_book(book_id)
-	if book is None:
-		abort(404)
+    book = db_util.remove_book(book_id)
+    if book is None:
+        abort(404)
 
-	json_data = book.to_json()
-	return json_data, 200
+    json_data = book.to_json()
+    return json_data, 200
 
 
-@api_blueprint.route("/books", methods = ["GET"])
+@api_blueprint.route("/books", methods=["GET"])
 def get_all_books():
-	books = db_util.get_all_books()
-	books_dict = {
-		"books": [book.to_json() for book in books]
-	}
-	json_data = json.dumps(books_dict)
+    books = db_util.get_all_books()
+    books_dict = {
+        "books": [book.to_json() for book in books]
+    }
+    json_data = json.dumps(books_dict)
 
-	return json_data, 200
+    return json_data, 200
+
+
+@api_blueprint.route("/users", methods=["GET"])
+def get_all_users():
+    users = db_util.get_all_users()
+    users_dict = {
+        "users": [user.to_json() for user in users]
+    }
+    json_data = json.dumps(users_dict)
+
+    return json_data, 200
+
+
+@api_blueprint.route("/users/<int:user_id>", methods=["GET"])
+def get_user(user_id):
+    user = db_util.get_user(user_id)
+    if user is None:
+        abort(404)
+
+    json_data = user.to_json()
+    return json_data, 200
+
+
+@api_blueprint.route("/users/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+    data = request.get_json()
+    user = db_util.update_user(user_id, data)
+    if user is None:
+        abort(404)
+
+    json_data = user.to_json()
+    return json_data, 200
+
+
+@api_blueprint.route("/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    user = db_util.remove_user(user_id)
+    if user is None:
+        abort(404)
+
+    json_data = user.to_json()
+    return json_data, 200

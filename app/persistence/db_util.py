@@ -1,6 +1,6 @@
 import os
 
-from .models import Book
+from .models import Book, User
 from . import db
 
 
@@ -69,3 +69,44 @@ def update_book(book_id, book_json):
 	db.session.commit()
 
 	return book
+
+
+def get_user(user_id):
+	return User.query.filter_by(id = user_id).first()
+
+
+def get_all_users():
+	return User.query.all()
+
+
+def get_users_by_filter(username = None):
+	query_obj = User.query
+	if username is not None:
+		query_obj = query_obj.filter_by(username = username)
+	# If more filters, use filter_by again.
+
+	return query_obj.all()
+
+
+def remove_user(user_id):
+	user = get_user(user_id)
+	if user is None:
+		return None
+	db.session.delete(user)
+	db.session.commit()
+
+	return user
+
+
+def update_user(user_id, user_json):
+	user = get_user(user_id)
+	if user is None:
+		return None
+
+	if "username" in user_json:
+		user.username = user_json["username"]
+
+	db.session.add(user)
+	db.session.commit()
+
+	return user
