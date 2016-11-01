@@ -101,3 +101,74 @@ class BookModelTestCase(unittest.TestCase):
             self.assertTrue(books[i].book_name == all_books[i].book_name)
             self.assertTrue(books[i].author_name == all_books[i].author_name)
             self.assertTrue(books[i].comments == all_books[i].comments)
+
+    def test_remove_book(self):
+        org_book = db_util.add_book(self.get_book_json(0))
+        org_book_2 = db_util.add_book(self.get_book_json(1))
+
+        book = db_util.remove_book(org_book.id)
+        self.assertTrue(book.book_name == org_book.book_name)
+        self.assertTrue(book.author_name == org_book.author_name)
+        self.assertTrue(book.comments == org_book.comments)
+        self.assertTrue(len(db_util.get_all_books()) == 1)
+
+        db_util.remove_book(org_book_2.id)
+        self.assertTrue(len(db_util.get_all_books()) == 0)
+
+    def test_update_book_comments(self):
+        book_json = self.get_book_json(0)
+
+        # Modifying only the comments.
+        modified_json = book_json.copy()
+        modified_json["comments"] = "This is the updated comment!"
+
+        org_book = db_util.add_book(book_json)
+        updated_book = db_util.update_book(org_book.id, modified_json)
+
+        self.assertTrue(book_json["comments"] != updated_book.comments)
+        self.assertTrue(book_json["book_name"] == updated_book.book_name)
+        self.assertTrue(book_json["author_name"] == updated_book.author_name)
+
+    def test_update_book_bookname(self):
+        book_json = self.get_book_json(0)
+
+        # Modifying only the book name.
+        modified_json = book_json.copy()
+        modified_json["book_name"] = "New book name"
+
+        org_book = db_util.add_book(book_json)
+        updated_book = db_util.update_book(org_book.id, modified_json)
+
+        self.assertTrue(book_json["book_name"] != updated_book.book_name)
+        self.assertTrue(book_json["comments"] == updated_book.comments)
+        self.assertTrue(book_json["author_name"] == updated_book.author_name)
+
+    def test_update_book_authorname(self):
+        book_json = self.get_book_json(0)
+
+        # Modifying only the author name.
+        modified_json = book_json.copy()
+        modified_json["author_name"] = "New author name"
+
+        org_book = db_util.add_book(book_json)
+        updated_book = db_util.update_book(org_book.id, modified_json)
+
+        self.assertTrue(book_json["book_name"] == updated_book.book_name)
+        self.assertTrue(book_json["comments"] == updated_book.comments)
+        self.assertTrue(book_json["author_name"] != updated_book.author_name)
+
+    def test_update_book_all(self):
+        book_json = self.get_book_json(0)
+
+        # Modifying all the attributes.
+        modified_json = book_json.copy()
+        modified_json["author_name"] = "New author name"
+        modified_json["book_name"] = "New book name"
+        modified_json["comments"] = "Updated comments."
+
+        org_book = db_util.add_book(book_json)
+        updated_book = db_util.update_book(org_book.id, modified_json)
+
+        self.assertTrue(book_json["book_name"] != updated_book.book_name)
+        self.assertTrue(book_json["comments"] != updated_book.comments)
+        self.assertTrue(book_json["author_name"] != updated_book.author_name)
