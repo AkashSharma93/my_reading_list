@@ -27,6 +27,16 @@ class BookModelTestCase(unittest.TestCase):
                 "comments": "This is the 3rd book in the series."
             },
             {
+                "book_name": "Inferno",
+                "author_name": "Dan Brown",
+                "comments": "Latest Dan Brown book."
+            },
+            {
+                "book_name": "To Kill a Mocking Bird",
+                "author_name": "Harper Lee",
+                "comments": "A pretty awesome book!!"
+            },
+            {
                 "book_name": "Harry Potter and the Philosophers Stone",
                 "author_name": "J K Rowling",
             },
@@ -70,3 +80,24 @@ class BookModelTestCase(unittest.TestCase):
         self.assertTrue(book.book_name == book_from_get.book_name)
         self.assertTrue(book.author_name == book_from_get.author_name)
         self.assertTrue(book.comments == book_from_get.comments)
+
+    def test_get_all_books(self):
+        books = []
+        books.append(db_util.add_book(self.get_book_json(0)))
+        all_books = db_util.get_all_books()
+
+        self.assertTrue(all_books is not None)
+        self.assertTrue(len(all_books) == 1)
+
+        books.append(db_util.add_book(self.get_book_json(1)))
+        all_books = db_util.get_all_books()
+        self.assertTrue(len(all_books) == 2)
+
+        books.append(db_util.add_book(self.get_book_json(2)))
+        all_books = db_util.get_all_books()
+        self.assertTrue(len(all_books) == 3)
+
+        for i in range(3):
+            self.assertTrue(books[i].book_name == all_books[i].book_name)
+            self.assertTrue(books[i].author_name == all_books[i].author_name)
+            self.assertTrue(books[i].comments == all_books[i].comments)
