@@ -13,7 +13,3 @@ def register(user_json):
     db.session.commit()
 
     return user
-
-
-def get_user(email):
-    return User.query.filter_by(email = email).first()
