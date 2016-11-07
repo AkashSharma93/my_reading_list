@@ -72,3 +72,19 @@ class UserModelTestCase(unittest.TestCase):
         self.assertEqual(user_json["email"], updated_user.email)
         self.assertNotEqual(user_json["username"], updated_user.username)
         self.assertEqual(registered_user.password_hash, updated_user.password_hash)
+
+    def test_get_all_users(self):
+        users = []
+
+        for i in range(3):
+            users.append(register(self.get_user_json(self.get_test_user(i))))
+            all_users = db_util.get_all_users()
+            self.assertIsNotNone(all_users)
+            self.assertEqual(len(all_users), i + 1)
+
+        all_users = db_util.get_all_users()
+
+        for i in range(3):
+            self.assertTrue(users[i].username == all_users[i].username)
+            self.assertTrue(users[i].email == all_users[i].email)
+            self.assertTrue(users[i].password_hash == all_users[i].password_hash)
