@@ -1,8 +1,6 @@
 import unittest
 import collections
 
-from flask import current_app
-
 from app import create_app
 from app.persistence import db_util
 from app.persistence import db
@@ -10,6 +8,9 @@ from app.auth.auth_handler import register
 
 
 class UserModelTestCase(unittest.TestCase):
+    TestUser = collections.namedtuple("TestUser", ["email", "username", "password"])
+    users = [TestUser("testemail%s.com" % str(i), "user" + str(i), "pass" + str(i)) for i in range(10)]
+
     def setUp(self):
         self.app = create_app("testing")
         self.app_context = self.app.app_context()
@@ -21,13 +22,12 @@ class UserModelTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def get_test_user(self, index):
-        TestUser = collections.namedtuple("TestUser", ["email", "username", "password"])
-        users = [TestUser("testemail%s.com" % str(i), "user" + str(i), "pass" + str(i)) for i in range(10)]
+    @staticmethod
+    def get_test_user(index):
+        return UserModelTestCase.users[index]
 
-        return users[index]
-
-    def get_user_json(self, test_user):
+    @staticmethod
+    def get_user_json(test_user):
         user_json = {
             "email": test_user.email,
             "username": test_user.username,
@@ -37,8 +37,8 @@ class UserModelTestCase(unittest.TestCase):
         return user_json
 
     def test_register_user(self):
-        test_user = self.get_test_user(0)
-        user_json = self.get_user_json(test_user)
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
         user = register(user_json)
 
         self.assertIsNotNone(user)
@@ -49,8 +49,8 @@ class UserModelTestCase(unittest.TestCase):
  #       self.assertRaises(AttributeError, user.password)    # This is failing. I wonder why.
 
     def test_get_user(self):
-        test_user = self.get_test_user(0)
-        user_json = self.get_user_json(test_user)
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
         registered_user = register(user_json)
 
         user = db_util.get_user(registered_user.id)
@@ -60,8 +60,8 @@ class UserModelTestCase(unittest.TestCase):
         self.assertEqual(registered_user.password_hash, user.password_hash)
 
     def test_update_user(self):
-        test_user = self.get_test_user(0)
-        user_json = self.get_user_json(test_user)
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
         registered_user = register(user_json)
 
         modified_json = user_json.copy()
@@ -77,7 +77,7 @@ class UserModelTestCase(unittest.TestCase):
         users = []
 
         for i in range(3):
-            users.append(register(self.get_user_json(self.get_test_user(i))))
+            users.append(register(self.get_user_json(UserModelTestCase.get_test_user(i))))
             all_users = db_util.get_all_users()
             self.assertIsNotNone(all_users)
             self.assertEqual(len(all_users), i + 1)
