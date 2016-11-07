@@ -58,3 +58,17 @@ class UserModelTestCase(unittest.TestCase):
         self.assertEqual(test_user.email, user.email)
         self.assertEqual(test_user.username, user.username)
         self.assertEqual(registered_user.password_hash, user.password_hash)
+
+    def test_update_user(self):
+        test_user = self.get_test_user(0)
+        user_json = self.get_user_json(test_user)
+        registered_user = register(user_json)
+
+        modified_json = user_json.copy()
+        modified_json["username"] = "updated_user_name"
+        updated_user = db_util.update_user(registered_user.id, modified_json)
+
+        self.assertEqual(modified_json["username"], updated_user.username)
+        self.assertEqual(user_json["email"], updated_user.email)
+        self.assertNotEqual(user_json["username"], updated_user.username)
+        self.assertEqual(registered_user.password_hash, updated_user.password_hash)
