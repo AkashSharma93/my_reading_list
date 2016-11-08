@@ -17,9 +17,12 @@ def verify_password(email, password):
 
 @api_auth_blueprint.route("/register", methods=["POST"])
 def register():
-    json_data = request.get_json()
-    if json_data is None:
-        return json.dumps({"Error": "JSON data is empty. To register, send POST request with email, username and password."}), 400
+    request_data = request.get_data()
+    if request_data is None or request_data == "":
+        return json.dumps(
+            {"Error": "JSON data is empty. To register, send POST request with email, username and password."}), 400
+
+    json_data = json.loads(request_data)
     if "email" not in json_data:
         return json.dumps({"Error": "email cannot be empty."}), 400
     if "username" not in json_data:
@@ -33,7 +36,7 @@ def register():
         "id": user.id,
         "email": user.email,
         "username": user.username,
-        "url": url_for("api_auth_blueprint.confirm", token = token, _external = True),
+        "url": url_for("api_auth_blueprint.confirm", token=token, _external=True),
         "message": "To confirm your account, send a POST request to the given url, with your email and password."
     })
 
