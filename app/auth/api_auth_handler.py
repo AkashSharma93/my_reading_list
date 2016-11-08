@@ -45,7 +45,12 @@ def register():
 
 @api_auth_blueprint.route("/confirm/<token>", methods=["POST"])
 def confirm(token):
-    json_data = request.get_json()
+    request_data = request.get_data()
+    if request_data is None or request_data == "":
+        return json.dumps(
+            {"Error": "JSON data is empty. To register, send POST request with email, username and password."}), 400
+
+    json_data = json.loads(request_data)
     if "email" not in json_data:
         return json.dumps({"Error": "email cannot be empty."}), 400
     if "password" not in json_data:
