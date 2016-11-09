@@ -154,4 +154,4 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertIsNotNone(data)
         data = json.loads(data)
         self.assertIn("Error", data)
-        self.assertEqual(data["Error"], "email doesn't exist in db.")
+        self.assertEqual(data["Error"], "User with email <%s> not found." % "test_email@gmail.com")
