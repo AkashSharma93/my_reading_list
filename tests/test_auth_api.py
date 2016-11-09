@@ -141,3 +141,17 @@ class AuthApiTestCase(unittest.TestCase):
         data = json.loads(data)
         self.assertIn("Error", data)
         self.assertEqual(data["Error"], "email cannot be empty.")
+
+    def test_confirm_api_unregistered_email(self):
+        # Check response when unregistered email is provided.
+        request_data = json.dumps({
+            "email": "test_email@gmail.com",
+            "password": "test_password"
+        })
+        response = self.client.post(url_for("api_auth_blueprint.confirm", token="1234"), data=request_data)
+        self.assertTrue(response.status_code, 404)
+        data = response.get_data(as_text=True)
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertIn("Error", data)
+        self.assertEqual(data["Error"], "email doesn't exist in db.")

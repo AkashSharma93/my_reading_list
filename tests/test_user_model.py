@@ -1,6 +1,8 @@
 import unittest
 import collections
 
+from flask import json
+
 from app import create_app
 from app.persistence import db_util
 from app.persistence import db
@@ -88,3 +90,83 @@ class UserModelTestCase(unittest.TestCase):
             self.assertTrue(users[i].username == all_users[i].username)
             self.assertTrue(users[i].email == all_users[i].email)
             self.assertTrue(users[i].password_hash == all_users[i].password_hash)
+
+    def test_get_user_by_filter_username(self):
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
+        registered_user = register(user_json)
+
+        user = db_util.get_users_by_filter(username=registered_user.username)
+        self.assertGreater(len(user), 0)
+        user = user[0]
+        self.assertIsNotNone(user)
+        self.assertEqual(registered_user.id, user.id)
+        self.assertEqual(registered_user.username, user.username)
+        self.assertEqual(registered_user.email, user.email)
+
+    def test_get_user_by_filter_username_negative(self):
+        user = db_util.get_users_by_filter(username="userThatDoesNotExist")
+        self.assertEqual(len(user), 0)
+
+    def test_get_user_by_filter_username_unique_constraint(self):
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
+        registered_user = register(user_json)
+
+        test_user2 = {
+            "email": "omg@gmail.com",
+            "username": registered_user.username,
+            "password": "testomg"
+        }
+
+        integrity_error_raised = False
+        try:
+            register(test_user2)
+        except:
+            integrity_error_raised = True
+
+        self.assertTrue(integrity_error_raised)
+
+    def test_get_user_by_filter_email(self):
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
+        registered_user = register(user_json)
+
+        user = db_util.get_users_by_filter(email=registered_user.email)
+        self.assertGreater(len(user), 0)
+        user = user[0]
+        self.assertIsNotNone(user)
+        self.assertEqual(registered_user.id, user.id)
+        self.assertEqual(registered_user.username, user.username)
+        self.assertEqual(registered_user.email, user.email)
+
+    def test_get_user_by_filter_email_negative(self):
+        users = db_util.get_users_by_filter(email="nonexistantid@gmail.com")
+        self.assertEqual(len(users), 0)
+
+    def test_get_user_by_filter_email_unique_constraint(self):
+        test_user = UserModelTestCase.get_test_user(0)
+        user_json = UserModelTestCase.get_user_json(test_user)
+        registered_user = register(user_json)
+
+        test_user2 = {
+            "email": registered_user.email,
+            "username": "useromg",
+            "password": "testomg"
+        }
+
+        integrity_error_raised = False
+        try:
+            register(test_user2)
+        except:
+            integrity_error_raised = True
+
+        self.assertTrue(integrity_error_raised)
+
+    def test_get_user_by_filter_no_filters(self):
+        for i in range(5):
+            user_json = UserModelTestCase.get_user_json(UserModelTestCase.get_test_user(i))
+            register(user_json)
+
+        users = db_util.get_users_by_filter()
+        self.assertEqual(len(users), 5)
