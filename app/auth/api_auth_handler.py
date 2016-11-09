@@ -2,6 +2,7 @@ from flask import request, json, url_for
 
 from . import api_auth, api_auth_blueprint
 from ..persistence.models import User
+from ..persistence import db_util
 import auth_handler
 
 
@@ -57,7 +58,7 @@ def confirm(token):
         return json.dumps({"Error": "password cannot be empty."}), 400
 
     email = json_data["email"]
-    user = auth_handler.get_user(email=email)
+    user = db_util.get_user(email=email)
     if user is None:
         return json.dumps({"Error": "User with email id <%s> not found." % email}), 404
 
