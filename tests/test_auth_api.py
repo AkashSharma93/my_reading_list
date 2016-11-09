@@ -23,7 +23,7 @@ class AuthApiTestCase(unittest.TestCase):
         response = self.client.get(url_for("api_auth_blueprint.register"))
         self.assertIsNotNone(response)
 
-    def test_register_api_negative_scenarios(self):
+    def test_register_api_no_json_data(self):
         response = self.client.get(url_for("api_auth_blueprint.register"))
         self.assertEqual(response.status_code, 405)
 
@@ -38,6 +38,7 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertEqual(data["Error"],
                          "JSON data is empty. To register, send POST request with email, username and password.")
 
+    def test_register_api_no_email(self):
         # Check response when incomplete json data is sent. [Email absent]
         request_data = json.dumps({
             "username": "test_user",
@@ -51,6 +52,7 @@ class AuthApiTestCase(unittest.TestCase):
         data = json.loads(data)
         self.assertEqual(data["Error"], "email cannot be empty.")
 
+    def test_register_api_no_username(self):
         # Check response when incomplete json data is sent. [Username absent]
         request_data = json.dumps({
             "email": "test_email@123.com",
@@ -64,6 +66,7 @@ class AuthApiTestCase(unittest.TestCase):
         data = json.loads(data)
         self.assertEqual(data["Error"], "username cannot be empty.")
 
+    def test_register_api_no_password(self):
         # Check response when incomplete json data is sent. [Password absent]
         request_data = json.dumps({
             "email": "test_email@123.com",
@@ -98,7 +101,7 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertEqual(data["message"],
                          "To confirm your account, send a POST request to the given url, with your email and password.")
 
-    def test_confirm_api_negative(self):
+    def test_confirm_api_no_json_data(self):
         response = self.client.get(url_for("api_auth_blueprint.confirm", token="1234"))
         self.assertTrue(response.status_code, 405)
 
@@ -113,6 +116,7 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertEqual(data["Error"],
                          "JSON data is empty. To register, send POST request with email, username and password.")
 
+    def test_confirm_api_no_password(self):
         # Check response when incomplete json data is sent. [password absent]
         request_data = json.dumps({
             "email": "test_email@email.com"
@@ -125,6 +129,7 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertIn("Error", data)
         self.assertEqual(data["Error"], "password cannot be empty.")
 
+    def test_confirm_api_no_email(self):
         # Check response when incomplete json data is sent. [email absent]
         request_data = json.dumps({
             "password": "test_password"
