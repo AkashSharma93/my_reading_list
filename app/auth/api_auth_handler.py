@@ -58,10 +58,11 @@ def confirm(token):
         return json.dumps({"Error": "password cannot be empty."}), 400
 
     email = json_data["email"]
-    user = db_util.get_user(email=email)
-    if user is None:
-        return json.dumps({"Error": "User with email id <%s> not found." % email}), 404
+    users = db_util.get_users_by_filter(email=email)
+    if len(users) == 0:
+        return json.dumps({"Error": "User with email <%s> not found." % email}), 404
 
+    user = users[0]
     password = json_data["password"]
     if not user.verify_password(password):
         return json.dumps({"Error": "Invalid email or password."}), 401
