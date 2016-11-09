@@ -37,6 +37,7 @@ def register():
         "id": user.id,
         "email": user.email,
         "username": user.username,
+        "token": token,
         "url": url_for("api_auth_blueprint.confirm", token=token, _external=True),
         "message": "To confirm your account, send a POST request to the given url, with your email and password."
     })
