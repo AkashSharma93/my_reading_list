@@ -79,11 +79,13 @@ def get_all_users():
     return User.query.all()
 
 
-def get_users_by_filter(username=None):
+def get_users_by_filter(username=None, email=None):
     query_obj = User.query
     if username is not None:
         query_obj = query_obj.filter_by(username=username)
     # If more filters, use filter_by again.
+    if email is not None:
+        query_obj = query_obj.filter_by(email=email)
 
     return query_obj.all()
 
