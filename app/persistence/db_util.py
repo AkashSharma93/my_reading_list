@@ -34,11 +34,13 @@ def get_all_books():
     return Book.query.all()
 
 
-def get_books_by_filter(book_name=None):
+def get_books_by_filter(book_name=None, author_name=None):
     query_obj = Book.query
     if book_name is not None:
         query_obj = query_obj.filter_by(book_name=book_name)
     # If more filters, use filter_by again.
+    if author_name is not None:
+        query_obj = query_obj.filter_by(author_name=author_name)
 
     return query_obj.all()
 
