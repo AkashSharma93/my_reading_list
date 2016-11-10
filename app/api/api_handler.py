@@ -22,6 +22,9 @@ def add_book():
             {"Error": "JSON data is empty. To add book, send POST request with book_name, [author_name] and [comments]."}), 400
 
     data = json.loads(request_data)
+    if "book_name" not in data:
+        return json.dumps({"Error": "book_name cannot be empty."}), 400
+
     book = db_util.add_book(data)
     json_data = book.to_json()
     return json_data, 200
@@ -29,7 +32,12 @@ def add_book():
 
 @api_blueprint.route("/books/<int:book_id>", methods=["PUT"])
 def update_book(book_id):
-    data = request.get_json()
+    request_data = request.get_data()
+    if request_data is None or request_data == "":
+        return json.dumps(
+            {"Error": "JSON data is empty. To update book, send PUT request with book_name, [author_name] and [comments]."}), 400
+
+    data = json.loads(request_data)
     book = db_util.update_book(book_id, data)
     if book is None:
         abort(404)

@@ -51,6 +51,8 @@ class BookAPITestCase(unittest.TestCase):
         data = response.get_data()
         self.assertIsNotNone(data)
         data = json.loads(data)
+        for key in ("book_name", "author_name", "comments", "id", "url"):
+            self.assertIn(key, data)
         self.assertEqual(data["book_name"], added_book.book_name)
         self.assertEqual(data["author_name"], added_book.author_name)
         self.assertEqual(data["comments"], added_book.comments)
@@ -76,6 +78,39 @@ class BookAPITestCase(unittest.TestCase):
         data = response.get_data()
         self.assertIsNotNone(data)
         data = json.loads(data)
+        for key in ("book_name", "author_name", "comments", "url", "id"):
+            self.assertIn(key, data)
         self.assertTrue(book_data.book_name, data["book_name"])
         self.assertTrue(book_data.author_name, data["author_name"])
         self.assertTrue(book_data.comments, data["comments"])
+
+    def test_post_book_bookname_absent(self):
+        # Check response when a book without book_name is added.
+        book_dict = self.get_book_dict(self.get_book_data(0))
+        del book_dict["book_name"]
+        book_json = json.dumps(book_dict)
+
+        response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
+        self.assertTrue(response.status_code, 400)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertIn("Error", data)
+        self.assertTrue(data["Error"], "book_name cannot be absent.")
+
+    def test_update_book_no_json(self):
+        # Check response when a book update is requested without json data.
+        response = self.client.put(url_for("api_blueprint.update_book", book_id=123))
+        self.assertEqual(response.status_code, 400)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertIn("Error", data)
+        self.assertTrue(data["Error"],
+                        "JSON data is empty. To update book, send PUT request with book_name, [author_name] and [comments].")
+
+    def test_update_book_non_existant(self):
+        # Check response when trying to update a book which doesn't exist.
+        book_json = json.dumps(self.get_book_dict(self.get_book_data(0)))
+        response = self.client.put(url_for("api_blueprint.update_book", book_id=123), data=book_json)
+        self.assertEqual(response.status_code, 404)
