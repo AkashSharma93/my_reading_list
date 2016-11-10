@@ -197,4 +197,14 @@ class BookModelTestCase(unittest.TestCase):
 
     def test_get_book_by_filter_book_name(self):
         # Check response of get_book_by_filter when the book's name is provided.
-        pass
+        for i in range(2):
+            db_util.add_book(self.get_book_json(i))
+
+        required_book = self.get_book_json(0)
+        books = db_util.get_books_by_filter(book_name=required_book["book_name"])
+        self.assertIsNotNone(books)
+        self.assertEqual(len(books), 1)
+        book = books[0]
+        self.assertEqual(required_book["book_name"], book.book_name)
+        self.assertEqual(required_book["author_name"], book.author_name)
+        self.assertEqual(required_book["comments"], book.comments)
