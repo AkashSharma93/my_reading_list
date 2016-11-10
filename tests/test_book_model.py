@@ -172,3 +172,29 @@ class BookModelTestCase(unittest.TestCase):
         self.assertTrue(book_json["book_name"] != updated_book.book_name)
         self.assertTrue(book_json["comments"] != updated_book.comments)
         self.assertTrue(book_json["author_name"] != updated_book.author_name)
+
+    def test_bookname_unique_constraint(self):
+        # Check the response when two books with same name are added to the DB.
+        book_json = self.get_book_json(0)
+        db_util.add_book(book_json)
+        book_json["author"] = "somethingelse"
+        book_json["comments"] = "some other comment."
+
+        unique_constraint_raised = False
+        try:
+            db_util.add_book(book_json)
+        except:
+            unique_constraint_raised = True
+
+        self.assertTrue(unique_constraint_raised)
+
+    def test_get_book_by_filter_no_filter(self):
+        # Check response of get_book_by_filter if no filters are specified. [Should return all books]
+        for i in range(3):
+            db_util.add_book(self.get_book_json(i))
+
+        self.assertEqual(db_util.get_all_books(), db_util.get_books_by_filter())
+
+    def test_get_book_by_filter_book_name(self):
+        # Check response of get_book_by_filter when the book's name is provided.
+        pass
