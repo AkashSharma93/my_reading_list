@@ -4,7 +4,7 @@ from . import api_blueprint
 from ..persistence import db_util
 
 
-@api_blueprint.route("/books/<int:book_id>")
+@api_blueprint.route("/books/<int:book_id>", methods=["GET"])
 def get_book(book_id):
     book = db_util.get_book(book_id)
     if book is None:
@@ -16,7 +16,12 @@ def get_book(book_id):
 
 @api_blueprint.route("/books", methods=["POST"])
 def add_book():
-    data = request.get_json()
+    request_data = request.get_data()
+    if request_data is None or request_data == "":
+        return json.dumps(
+            {"Error": "JSON data is empty. To add book, send POST request with book_name, [author_name] and [comments]."}), 400
+
+    data = json.loads(request_data)
     book = db_util.add_book(data)
     json_data = book.to_json()
     return json_data, 200
