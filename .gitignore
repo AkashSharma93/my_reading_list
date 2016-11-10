@@ -3,3 +3,4 @@ venv
 *.sqlite
 .idea
 tmp
+.DS_Store
