@@ -245,6 +245,7 @@ class BookAPITestCase(unittest.TestCase):
         for i in range(3):
             response = self.client.delete(url_for("api_blueprint.delete_book", book_id=books[i].id))
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(db_util.get_all_books()), (3 - i) - 1)
 
     def test_get_all_books(self):
         # Check the response for get all books.
