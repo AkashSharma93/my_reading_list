@@ -109,8 +109,100 @@ class BookAPITestCase(unittest.TestCase):
         self.assertTrue(data["Error"],
                         "JSON data is empty. To update book, send PUT request with book_name, [author_name] and [comments].")
 
-    def test_update_book_non_existant(self):
+    def test_update_book_non_existent(self):
         # Check response when trying to update a book which doesn't exist.
         book_json = json.dumps(self.get_book_dict(self.get_book_data(0)))
         response = self.client.put(url_for("api_blueprint.update_book", book_id=123), data=book_json)
         self.assertEqual(response.status_code, 404)
+
+    def test_update_book_book_name(self):
+        # Check response when trying to update only the book_name.
+        book_data = self.get_book_data(0)
+        book_dict = self.get_book_dict(book_data)
+        book_json = json.dumps(book_dict)
+        response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Update book.
+        book_dict["book_name"] = "Updated book name"
+        book_json = json.dumps(book_dict)
+        response = self.client.put(url_for("api_blueprint.update_book", book_id=data["id"]), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(book_data.author_name, data["author_name"])
+        self.assertEqual(book_data.comments, data["comments"])
+        self.assertEqual(book_dict["book_name"], data["book_name"])
+        self.assertNotEqual(book_data.book_name, data["book_name"])
+
+    def test_update_book_author_name(self):
+        # Check response when trying to update only the author_name.
+        book_data = self.get_book_data(0)
+        book_dict = self.get_book_dict(book_data)
+        book_json = json.dumps(book_dict)
+        response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Update book.
+        book_dict["author_name"] = "Updated author name"
+        book_json = json.dumps(book_dict)
+        response = self.client.put(url_for("api_blueprint.update_book", book_id=data["id"]), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(book_data.book_name, data["book_name"])
+        self.assertEqual(book_data.comments, data["comments"])
+        self.assertEqual(book_dict["author_name"], data["author_name"])
+        self.assertNotEqual(book_data.author_name, data["author_name"])
+
+    def test_update_book_comments(self):
+        # Check response when trying to update only the comments.
+        book_data = self.get_book_data(0)
+        book_dict = self.get_book_dict(book_data)
+        book_json = json.dumps(book_dict)
+        response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Update book.
+        book_dict["comments"] = "Updated comments."
+        book_json = json.dumps(book_dict)
+        response = self.client.put(url_for("api_blueprint.update_book", book_id=data["id"]), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(book_data.book_name, data["book_name"])
+        self.assertEqual(book_data.author_name, data["author_name"])
+        self.assertEqual(book_dict["comments"], data["comments"])
+        self.assertNotEqual(book_data.comments, data["comments"])
+
+    def test_update_book_all_attributes(self):
+        # Check response when trying to update all the attributes of a book.
+        book_data = self.get_book_data(0)
+        book_dict = self.get_book_dict(book_data)
+        book_json = json.dumps(book_dict)
+        response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Update book.
+        book_dict["book_name"]  = "Updated book name"
+        book_dict["author_name"] = "Updated author name"
+        book_dict["comments"] = "Updated comments."
+        book_json = json.dumps(book_dict)
+        response = self.client.put(url_for("api_blueprint.update_book", book_id=data["id"]), data=book_json)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(book_dict["book_name"], data["book_name"])
+        self.assertNotEqual(book_data.book_name, data["book_name"])
+        self.assertEqual(book_dict["author_name"], data["author_name"])
+        self.assertNotEqual(book_data.author_name, data["author_name"])
+        self.assertEqual(book_dict["comments"], data["comments"])
+        self.assertNotEqual(book_data.comments, data["comments"])
