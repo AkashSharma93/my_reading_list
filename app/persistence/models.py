@@ -71,6 +71,7 @@ class User(UserMixin, db.Model):
 
     def to_json(self):
         user_dict = {
+            "url": url_for("api_blueprint.get_user", user_id=self.id, _external=True),
             "id": self.id,
             "email": self.email,
             "username": self.username,
