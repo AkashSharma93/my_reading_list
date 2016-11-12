@@ -206,3 +206,42 @@ class BookAPITestCase(unittest.TestCase):
         self.assertNotEqual(book_data.author_name, data["author_name"])
         self.assertEqual(book_dict["comments"], data["comments"])
         self.assertNotEqual(book_data.comments, data["comments"])
+
+    def test_delete_all_books(self):
+        # Check response when all books are tried to be deleted.
+        for i in range(3):
+            db_util.add_book(self.get_book_dict(self.get_book_data(i)))
+
+        response = self.client.delete("/api/books")
+        self.assertEqual(response.status_code, 405)
+
+    def test_delete_book_non_existent(self):
+        # Check response when a non-existent book is tried to be deleted.
+        response = self.client.delete(url_for("api_blueprint.delete_book", book_id=123))
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_exiting_book(self):
+        # Check response when an existing book is deleted.
+        book_data = self.get_book_data(0)
+        book_dict = self.get_book_dict(book_data)
+        added_book = db_util.add_book(book_dict)
+
+        response = self.client.delete(url_for("api_blueprint.delete_book", book_id=added_book.id))
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(added_book.book_name, data["book_name"])
+        self.assertEqual(added_book.author_name, data["author_name"])
+        self.assertEqual(added_book.comments, data["comments"])
+
+        # Check if the book has actually been deleted.
+        response = self.client.delete(url_for("api_blueprint.get_book", book_id=added_book.id))
+        self.assertEqual(response.status_code, 404)
+
+        # Add and delete multiple books just to be sure.
+        books = [db_util.add_book(self.get_book_dict(self.get_book_data(i))) for i in range(3)]
+
+        for i in range(3):
+            response = self.client.delete(url_for("api_blueprint.delete_book", book_id=books[i].id))
+            self.assertTrue(response.status_code, 200)
