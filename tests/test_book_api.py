@@ -245,3 +245,20 @@ class BookAPITestCase(unittest.TestCase):
         for i in range(3):
             response = self.client.delete(url_for("api_blueprint.delete_book", book_id=books[i].id))
             self.assertTrue(response.status_code, 200)
+            self.assertTrue(len(books), 3 - i)
+
+    def test_get_all_books(self):
+        # Check the response for get all books.
+        books = [db_util.add_book(self.get_book_dict(self.get_book_data(i))) for i in range(5)]
+        response = self.client.get(url_for("api_blueprint.get_all_books"))
+        self.assertTrue(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        for index, book_json in enumerate(data["books"]):
+            book = json.loads(book_json)
+            self.assertEqual(books[index].id, book["id"])
+            self.assertEqual(books[index].book_name, book["book_name"])
+            self.assertEqual(books[index].author_name, book["author_name"])
+            self.assertEqual(books[index].comments, book["comments"])
+            self.assertEqual(books[index].author_name, book["author_name"])
