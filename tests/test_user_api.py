@@ -151,3 +151,38 @@ class UserAPITestCase(unittest.TestCase):
         self.assertNotEqual(user_data.email, data["email"])
         self.assertEqual(user_dict["username"], data["username"])
         self.assertNotEqual(user_data.username, data["username"])
+
+    def test_delete_user_non_existent(self):
+        # Test delete API on a non-existent user.
+        response = self.client.delete(url_for("api_blueprint.delete_user", user_id=123))
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_existing_user(self):
+        # Test delete API on existing user.
+        user_data = self.get_user_data(0)
+        user_dict = self.get_user_dict(user_data)
+        registered_user = auth_handler.register(user_dict)
+
+        response = self.client.delete(url_for("api_blueprint.delete_user", user_id=registered_user.id))
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(user_data.username, data["username"])
+        self.assertEqual(user_data.email, data["email"])
+        self.assertEqual(registered_user.id, data["id"])
+        response = self.client.get(url_for("api_blueprint.get_user", user_id=registered_user.id))
+        self.assertEqual(response.status_code, 404)
+
+        # Add and delete multiple users.
+        users = [auth_handler.register(self.get_user_dict(self.get_user_data(i))) for i in range(3)]
+
+        for i in range(3):
+            response = self.client.delete(url_for("api_blueprint.delete_user", user_id=users[i].id))
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(db_util.get_all_users()), (3 - i) - 1)
+
+    def test_delete_all_users(self):
+        # Check response of delete all users.
+        response = self.client.delete("/api/users")
+        self.assertEqual(response.status_code, 405)
