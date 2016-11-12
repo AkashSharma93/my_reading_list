@@ -89,3 +89,65 @@ class UserAPITestCase(unittest.TestCase):
         self.assertIn("Error", data)
         self.assertEqual(data["Error"],
                         "JSON data is empty. To update user, send PUT request with username, [email] and [password].")
+
+    def test_update_user_username(self):
+        # Test udpate_user with only username
+        user_data = self.get_user_data(0)
+        user_dict = self.get_user_dict(user_data)
+        registered_user = auth_handler.register(user_dict)
+        confirmed = registered_user.confirmed
+
+        # Update user.
+        user_dict["username"] = "Updated username"
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=registered_user.id),
+                                   data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(user_data.email, data["email"])
+        self.assertEqual(confirmed, data["confirmed"])
+        self.assertEqual(user_dict["username"], data["username"])
+        self.assertNotEqual(user_data.username, data["username"])
+
+    def test_update_user_email(self):
+        # Test udpate_user with only email
+        user_data = self.get_user_data(0)
+        user_dict = self.get_user_dict(user_data)
+        registered_user = auth_handler.register(user_dict)
+        confirmed = registered_user.confirmed
+
+        # Update user.
+        user_dict["email"] = "Updated email"
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=registered_user.id),
+                                   data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(user_data.username, data["username"])
+        self.assertEqual(confirmed, data["confirmed"])
+        self.assertEqual(user_dict["email"], data["email"])
+        self.assertNotEqual(user_data.email, data["email"])
+
+    def test_update_user_all_attributes(self):
+        # Test udpate_user with all attributes.
+        user_data = self.get_user_data(0)
+        user_dict = self.get_user_dict(user_data)
+        registered_user = auth_handler.register(user_dict)
+        confirmed = registered_user.confirmed
+
+        # Update user.
+        user_dict["email"] = "Updated email"
+        user_dict["username"] = "Updated username"
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=registered_user.id),
+                                   data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertEqual(confirmed, data["confirmed"])
+        self.assertEqual(user_dict["email"], data["email"])
+        self.assertNotEqual(user_data.email, data["email"])
+        self.assertEqual(user_dict["username"], data["username"])
+        self.assertNotEqual(user_data.username, data["username"])

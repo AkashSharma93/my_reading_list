@@ -109,6 +109,8 @@ def update_user(user_id, user_json):
 
     if "username" in user_json:
         user.username = user_json["username"]
+    if "email" in user_json:
+        user.email = user_json["email"]
 
     db.session.add(user)
     db.session.commit()
