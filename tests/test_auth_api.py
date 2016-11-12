@@ -103,11 +103,11 @@ class AuthApiTestCase(unittest.TestCase):
 
     def test_confirm_api_no_json_data(self):
         response = self.client.get(url_for("api_auth_blueprint.confirm", token="1234"))
-        self.assertTrue(response.status_code, 405)
+        self.assertEqual(response.status_code, 405)
 
         # Empty POST request data.
         response = self.client.post(url_for("api_auth_blueprint.confirm", token="1234"))
-        self.assertTrue(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
 
         data = response.get_data(as_text=True)
         self.assertIsNotNone(data)
@@ -122,7 +122,7 @@ class AuthApiTestCase(unittest.TestCase):
             "email": "test_email@email.com"
         })
         response = self.client.post(url_for("api_auth_blueprint.confirm", token="1234"), data=request_data)
-        self.assertTrue(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
         data = response.get_data(as_text=True)
         self.assertIsNotNone(data)
         data = json.loads(data)
@@ -135,7 +135,7 @@ class AuthApiTestCase(unittest.TestCase):
             "password": "test_password"
         })
         response = self.client.post(url_for("api_auth_blueprint.confirm", token="1234"), data=request_data)
-        self.assertTrue(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
         data = response.get_data(as_text=True)
         self.assertIsNotNone(data)
         data = json.loads(data)
@@ -149,7 +149,7 @@ class AuthApiTestCase(unittest.TestCase):
             "password": "test_password"
         })
         response = self.client.post(url_for("api_auth_blueprint.confirm", token="1234"), data=request_data)
-        self.assertTrue(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
         data = response.get_data(as_text=True)
         self.assertIsNotNone(data)
         data = json.loads(data)

@@ -40,7 +40,7 @@ class UserAPITestCase(unittest.TestCase):
         # Check the response for get all users.
         users = [auth_handler.register(self.get_user_dict(self.get_user_data(i))) for i in range(5)]
         response = self.client.get(url_for("api_blueprint.get_all_users"))
-        self.assertTrue(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         data = response.get_data()
         self.assertIsNotNone(data)
         data = json.loads(data)
@@ -72,3 +72,20 @@ class UserAPITestCase(unittest.TestCase):
         self.assertEqual(registered_user.username, data["username"])
         self.assertEqual(registered_user.email, data["email"])
         self.assertEqual(registered_user.confirmed, data["confirmed"])
+
+    def test_update_user_non_existent(self):
+        # Check response while updating a non-existent user.
+        user_json = json.dumps(self.get_user_dict(self.get_user_data(0)))
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=123), data=user_json)
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_user_no_json(self):
+        # Check response of update_user when no json is provided.
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=123))
+        self.assertEqual(response.status_code, 400)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertIn("Error", data)
+        self.assertEqual(data["Error"],
+                        "JSON data is empty. To update user, send PUT request with username, [email] and [password].")

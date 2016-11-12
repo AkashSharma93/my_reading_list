@@ -74,15 +74,15 @@ class BookAPITestCase(unittest.TestCase):
         book_json = json.dumps(book_dict)
 
         response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
-        self.assertTrue(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         data = response.get_data()
         self.assertIsNotNone(data)
         data = json.loads(data)
         for key in ("book_name", "author_name", "comments", "url", "id"):
             self.assertIn(key, data)
-        self.assertTrue(book_data.book_name, data["book_name"])
-        self.assertTrue(book_data.author_name, data["author_name"])
-        self.assertTrue(book_data.comments, data["comments"])
+        self.assertEqual(book_data.book_name, data["book_name"])
+        self.assertEqual(book_data.author_name, data["author_name"])
+        self.assertEqual(book_data.comments, data["comments"])
 
     def test_post_book_bookname_absent(self):
         # Check response when a book without book_name is added.
@@ -91,12 +91,12 @@ class BookAPITestCase(unittest.TestCase):
         book_json = json.dumps(book_dict)
 
         response = self.client.post(url_for("api_blueprint.add_book"), data=book_json)
-        self.assertTrue(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
         data = response.get_data()
         self.assertIsNotNone(data)
         data = json.loads(data)
         self.assertIn("Error", data)
-        self.assertTrue(data["Error"], "book_name cannot be absent.")
+        self.assertEqual(data["Error"], "book_name cannot be empty.")
 
     def test_update_book_no_json(self):
         # Check response when a book update is requested without json data.
@@ -106,7 +106,7 @@ class BookAPITestCase(unittest.TestCase):
         self.assertIsNotNone(data)
         data = json.loads(data)
         self.assertIn("Error", data)
-        self.assertTrue(data["Error"],
+        self.assertEqual(data["Error"],
                         "JSON data is empty. To update book, send PUT request with book_name, [author_name] and [comments].")
 
     def test_update_book_non_existent(self):
@@ -244,14 +244,13 @@ class BookAPITestCase(unittest.TestCase):
 
         for i in range(3):
             response = self.client.delete(url_for("api_blueprint.delete_book", book_id=books[i].id))
-            self.assertTrue(response.status_code, 200)
-            self.assertTrue(len(books), 3 - i)
+            self.assertEqual(response.status_code, 200)
 
     def test_get_all_books(self):
         # Check the response for get all books.
         books = [db_util.add_book(self.get_book_dict(self.get_book_data(i))) for i in range(5)]
         response = self.client.get(url_for("api_blueprint.get_all_books"))
-        self.assertTrue(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         data = response.get_data()
         self.assertIsNotNone(data)
         data = json.loads(data)
