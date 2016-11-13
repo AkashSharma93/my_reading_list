@@ -8,11 +8,11 @@ import auth_handler
 
 @api_auth.verify_password
 def verify_password(email, password):
+    print email + ", " +  password
     user = User.query.filter_by(email=email).first()
-    if not User:
+    if user is None:
         return False
 
-    g.current_user = user
     return user.verify_password(password)
 
 
@@ -76,3 +76,8 @@ def confirm(token):
         return json.dumps({"message": "You have successfully verified your account."}), 200
     else:
         return json.dumps({"Error": "The token specified is invalid."}), 401
+
+@api_auth_blueprint.route("/login", methods=["POST"])
+@api_auth.login_required
+def login():
+    return "hello"

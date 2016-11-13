@@ -1,4 +1,5 @@
 import unittest
+import base64
 
 from flask import url_for, json
 
@@ -277,3 +278,21 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertIn("Error", data)
         self.assertEqual(data["Error"], "The token specified is invalid.")
         self.assertFalse(registered_user.confirmed)
+
+    def test_login_api(self):
+        # Check login api.
+        request_dict = {
+            "email": "test_email@email.com",
+            "username": "test_username",
+            "password": "test_password"
+        }
+        request_data = json.dumps(request_dict)
+        response = self.client.post(url_for("api_auth_blueprint.register"), data=request_data)
+        self.assertEqual(response.status_code, 200)
+
+        credentials = base64.b64encode("%s:%s" % (request_dict["email"], request_dict["password"]))
+        auth_header = {
+            "Authorization": "Basic " + credentials
+        }
+        response = self.client.post(url_for("api_auth_blueprint.login"), data=request_data, headers=auth_header)
+        self.assertEqual(response.status_code, 200)
