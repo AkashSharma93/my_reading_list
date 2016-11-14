@@ -52,6 +52,10 @@ class User(UserMixin, db.Model):
         serializer = Serializer(current_app.config["SECRET_KEY"], 3600) #Token expires in one hour
         return serializer.dumps({"confirm": self.id})
 
+    def generate_auth_token(self):
+        serializer = Serializer(current_app.config["SECRET_KEY"], 3600)  # Token expires in one hour
+        return serializer.dumps({"token": self.id})
+
     def confirm(self, token):
         status = True
         serializer = Serializer(current_app.config["SECRET_KEY"])

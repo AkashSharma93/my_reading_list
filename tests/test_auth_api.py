@@ -279,8 +279,8 @@ class AuthApiTestCase(unittest.TestCase):
         self.assertEqual(data["Error"], "The token specified is invalid.")
         self.assertFalse(registered_user.confirmed)
 
-    def test_login_api(self):
-        # Check login api.
+    def test_token_api(self):
+        # Check token api.
         request_dict = {
             "email": "test_email@email.com",
             "username": "test_username",
@@ -289,10 +289,72 @@ class AuthApiTestCase(unittest.TestCase):
         request_data = json.dumps(request_dict)
         response = self.client.post(url_for("api_auth_blueprint.register"), data=request_data)
         self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
 
+        # Confirm account.
+        response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]), data=request_data)
+        self.assertEqual(response.status_code, 200)
+
+        # Get auth token.
         credentials = base64.b64encode("%s:%s" % (request_dict["email"], request_dict["password"]))
         auth_header = {
             "Authorization": "Basic " + credentials
         }
-        response = self.client.post(url_for("api_auth_blueprint.login"), data=request_data, headers=auth_header)
+        response = self.client.get(url_for("api_auth_blueprint.token"), headers=auth_header)
         self.assertEqual(response.status_code, 200)
+        data = response.get_data()
+        self.assertIsNotNone(data)
+        data = json.loads(data)
+        self.assertIn("token", data)
+        self.assertNotEqual(data["token"], "")
+
+    def test_two_tokens_not_same(self):
+        # Check if tokens of two users are the same or not.
+        requests = []
+        for i in range(2):
+            requests.append({
+                "email": "test_email_" + str(i),
+                "username": "test_username_" + str(i),
+                "password": "test_password_" + str(i)
+            })
+
+        tokens = []
+        for request in requests:
+            response = self.client.post(url_for("api_auth_blueprint.register"), data=json.dumps(request))
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.get_data())
+
+            # Confirm account.
+            response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]), data=json.dumps(request))
+            self.assertEqual(response.status_code, 200)
+
+            # Get auth token.
+            credentials = base64.b64encode("%s:%s" % (request["email"], request["password"]))
+            auth_header = {
+                "Authorization": "Basic " + credentials
+            }
+            response = self.client.get(url_for("api_auth_blueprint.token"), headers=auth_header)
+            self.assertEqual(response.status_code, 200)
+            data = response.get_data()
+            data = json.loads(data)
+            tokens.append(data["token"])
+
+        self.assertNotEqual(tokens[0], tokens[1])
+
+    def test_token_without_confirm(self):
+        # Check token generation without confirming account.
+        request_data = {
+            "email": "test_email",
+            "username": "test_username",
+            "password": "test_password"
+        }
+        response = self.client.post(url_for("api_auth_blueprint.register"), data=json.dumps(request_data))
+        self.assertEqual(response.status_code, 200)
+
+        # Get auth token.
+        credentials = base64.b64encode("%s:%s" % (request_data["email"], request_data["password"]))
+        auth_header = {
+            "Authorization": "Basic " + credentials
+        }
+        response = self.client.get(url_for("api_auth_blueprint.token"), headers=auth_header)
+        self.assertEqual(response.status_code, 401)

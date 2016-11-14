@@ -1,4 +1,4 @@
-from flask import request, json, url_for
+from flask import request, json, url_for, g
 
 from . import api_auth, api_auth_blueprint
 from ..persistence.models import User
@@ -8,11 +8,11 @@ import auth_handler
 
 @api_auth.verify_password
 def verify_password(email, password):
-    print email + ", " +  password
     user = User.query.filter_by(email=email).first()
-    if user is None:
+    if user is None or not user.confirmed:
         return False
 
+    g.current_user = user
     return user.verify_password(password)
 
 
@@ -77,7 +77,10 @@ def confirm(token):
     else:
         return json.dumps({"Error": "The token specified is invalid."}), 401
 
-@api_auth_blueprint.route("/login", methods=["POST"])
+@api_auth_blueprint.route("/token")
 @api_auth.login_required
-def login():
-    return "hello"
+def token():
+    token_data = {
+        "token": g.current_user.generate_auth_token()
+    }
+    return json.dumps(token_data), 200
