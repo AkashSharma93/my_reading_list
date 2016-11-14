@@ -70,6 +70,17 @@ class User(UserMixin, db.Model):
 
         return status
 
+    # I know this is a bit of a code duplication. But I'll change it. Some day...
+    @staticmethod
+    def verify_auth_token(auth_token):
+        serializer = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = serializer.loads(auth_token)
+        except:
+            return None
+
+        return User.query.get(data["token"])
+
     def __repr__(self):
         return "<User %s>" % self.username
 

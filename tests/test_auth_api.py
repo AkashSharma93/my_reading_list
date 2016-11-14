@@ -325,7 +325,8 @@ class AuthApiTestCase(unittest.TestCase):
             data = json.loads(response.get_data())
 
             # Confirm account.
-            response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]), data=json.dumps(request))
+            response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]),
+                                        data=json.dumps(request))
             self.assertEqual(response.status_code, 200)
 
             # Get auth token.
@@ -357,4 +358,71 @@ class AuthApiTestCase(unittest.TestCase):
             "Authorization": "Basic " + credentials
         }
         response = self.client.get(url_for("api_auth_blueprint.token"), headers=auth_header)
+        self.assertEqual(response.status_code, 401)
+
+    def test_auth_token_authentication(self):
+        # Check authentication with the auth token.
+        request = {
+            "email": "test_email",
+            "username": "test_username",
+            "password": "test_password"
+        }
+        response = self.client.post(url_for("api_auth_blueprint.register"), data = json.dumps(request))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Confirm account.
+        response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]),
+                                    data = json.dumps(request))
+        self.assertEqual(response.status_code, 200)
+
+        # Get auth token.
+        credentials = base64.b64encode("%s:%s" % (request["email"], request["password"]))
+        auth_header = {
+            "Authorization": "Basic " + credentials
+        }
+        response = self.client.get(url_for("api_auth_blueprint.token"), headers=auth_header)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Send request to dummy API to check authorization with auth token.
+        credentials = base64.b64encode(data["token"] + ":")
+        auth_header = {
+            "Authorization": "Basic " + credentials
+        }
+        response = self.client.get(url_for("api_auth_blueprint.test_auth_token"), headers=auth_header)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_data(), "Success")
+
+    def test_auth_token_invalid_authentication(self):
+        # Check authentication with the auth token.
+        request = {
+            "email": "test_email",
+            "username": "test_username",
+            "password": "test_password"
+        }
+        response = self.client.post(url_for("api_auth_blueprint.register"), data = json.dumps(request))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Confirm account.
+        response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]),
+                                    data = json.dumps(request))
+        self.assertEqual(response.status_code, 200)
+
+        # Get auth token.
+        credentials = base64.b64encode("%s:%s" % (request["email"], request["password"]))
+        auth_header = {
+            "Authorization": "Basic " + credentials
+        }
+        response = self.client.get(url_for("api_auth_blueprint.token"), headers=auth_header)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Send request to dummy API to check authorization with invalid auth token.
+        credentials = base64.b64encode("such_token_much_fail_401" + ":")
+        auth_header = {
+            "Authorization": "Basic " + credentials
+        }
+        response = self.client.get(url_for("api_auth_blueprint.test_auth_token"), headers=auth_header)
         self.assertEqual(response.status_code, 401)

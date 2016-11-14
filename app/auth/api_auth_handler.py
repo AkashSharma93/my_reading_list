@@ -8,6 +8,17 @@ import auth_handler
 
 @api_auth.verify_password
 def verify_password(email, password):
+    if password == "" or password is None:
+        # Token based authorization.
+        token = email
+        user = User.verify_auth_token(token)
+        if user is None or not user.confirmed:
+            return False
+        else:
+            g.current_user = user
+            return True
+
+    # Authorization using email and password.
     user = User.query.filter_by(email=email).first()
     if user is None or not user.confirmed:
         return False
@@ -77,6 +88,7 @@ def confirm(token):
     else:
         return json.dumps({"Error": "The token specified is invalid."}), 401
 
+
 @api_auth_blueprint.route("/token")
 @api_auth.login_required
 def token():
@@ -84,3 +96,9 @@ def token():
         "token": g.current_user.generate_auth_token()
     }
     return json.dumps(token_data), 200
+
+
+@api_auth_blueprint.route("/test_auth_token")
+@api_auth.login_required
+def test_auth_token():
+    return "Success", 200
