@@ -84,14 +84,17 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return "<User %s>" % self.username
 
-    def to_json(self):
+    def to_dict(self):
         user_dict = {
             "url": url_for("api_blueprint.get_user", user_id=self.id, _external=True),
             "id": self.id,
             "email": self.email,
             "username": self.username,
-            "confirmed": self.confirmed
+            "confirmed": self.confirmed,
         }
-        json_data = json.dumps(user_dict)
 
+        return user_dict
+
+    def to_json(self):
+        json_data = json.dumps(self.to_dict())
         return json_data

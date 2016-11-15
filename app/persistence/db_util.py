@@ -111,6 +111,10 @@ def update_user(user_id, user_json):
         user.username = user_json["username"]
     if "email" in user_json:
         user.email = user_json["email"]
+    if "password" in user_json:
+        # Requires re-confirmation of account.
+        user.password = user_json["password"]
+        user.confirmed = False
 
     db.session.add(user)
     db.session.commit()

@@ -152,6 +152,39 @@ class UserAPITestCase(unittest.TestCase):
         self.assertEqual(user_dict["username"], data["username"])
         self.assertNotEqual(user_data.username, data["username"])
 
+    def test_update_user_password(self):
+        # Test password update.
+        user_data = self.get_user_data(0)
+        user_dict = self.get_user_dict(user_data)
+
+        # Register user.
+        response = self.client.post(url_for("api_auth_blueprint.register"), data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Confirm user account.
+        response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]),
+                                    data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+
+        # Change password.
+        user_dict["password"] = "Updated_password"
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=data["id"]), data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+
+        # Verify the new token in response.
+        self.assertIn("token", data)
+        token = data["token"]
+        self.assertNotEqual(token, "")
+
+        # Confirm account again.
+        response = self.client.post(url_for("api_auth_blueprint.confirm", token=token), data=json.dumps(user_dict))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.get_data())
+        self.assertIn("message", data)
+        self.assertEqual(data["message"], "You have successfully verified your account.")
+
     def test_delete_user_non_existent(self):
         # Test delete API on a non-existent user.
         response = self.client.delete(url_for("api_blueprint.delete_user", user_id=123))

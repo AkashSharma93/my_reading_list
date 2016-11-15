@@ -102,7 +102,13 @@ def update_user(user_id):
     if user is None:
         abort(404)
 
-    json_data = user.to_json()
+    # Adding dynamic json contents here.
+    user_dict = user.to_dict()
+    if not user.confirmed:
+        user_dict["token"] = user.generate_confirmation_token()
+
+    # Return json response.
+    json_data = json.dumps(user_dict)
     return json_data, 200
 
 
