@@ -219,3 +219,45 @@ class UserAPITestCase(unittest.TestCase):
         # Check response of delete all users.
         response = self.client.delete("/api/users")
         self.assertEqual(response.status_code, 405)
+
+    @staticmethod
+    def register_user(test_obj, user_dict):
+        # Helper function to register a user.
+        response = test_obj.client.post(url_for("api_blueprint.register"), data=json.dumps(user_dict))
+        test_obj.assertEqual(response.status_code, 200)
+
+        data = response.get_data(as_text=True)
+        test_obj.assertIsNotNone(data)
+        data = json.loads(data)
+        for key in ("id", "email", "username", "url", "message", "token"):
+            test_obj.assertIn(key, data)
+
+        test_obj.assertEqual(data["username"], user_dict["username"])
+        test_obj.assertEqual(data["email"], user_dict["email"])
+        test_obj.assertEqual(data["message"],
+                         "To confirm your account, send a POST request to the given url, with your email and password.")
+
+        registered_user = db_util.get_user(data["id"])
+        test_obj.assertFalse(registered_user.confirmed)
+
+        return data
+
+    @staticmethod
+    def register_and_confirm(test_obj, user_dict):
+        # Helper function to register a user AND confirm the user.
+        data = UserAPITestCase.register_user(test_obj, user_dict)
+        token = data["token"]
+
+        response = test_obj.client.post(url_for("api_auth_blueprint.confirm", token=token), data=json.dumps(user_dict))
+        test_obj.assertEqual(response.status_code, 200)
+
+        data = response.get_data(as_text=True)
+        test_obj.assertIsNotNone(data)
+        data = json.loads(data)
+        test_obj.assertIn("message", data)
+        test_obj.assertEqual(data["message"], "You have successfully verified your account.")
+
+        registered_user = db_util.get_user(data["id"])
+        test_obj.assertTrue(registered_user.confirmed)
+
+        return registered_user.to_json()
