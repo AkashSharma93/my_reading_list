@@ -38,7 +38,7 @@ class UserAPITestCase(unittest.TestCase):
 
     def test_get_all_users(self):
         # Check the response for get all users.
-        users = [auth_handler.register(self.get_user_dict(self.get_user_data(i))) for i in range(5)]
+        users = [UserAPITestCase.register_and_confirm(self, self.get_user_dict(self.get_user_data(i))) for i in range(5)]
         response = self.client.get(url_for("api_blueprint.get_all_users"))
         self.assertEqual(response.status_code, 200)
         data = response.get_data()
@@ -57,9 +57,8 @@ class UserAPITestCase(unittest.TestCase):
 
     def test_get_existent_user(self):
         # Check response of get_user for existing user.
-        user_data = self.get_user_data(0)
-        user_dict = self.get_user_dict(user_data)
-        registered_user = auth_handler.register(user_dict)
+        user_dict = self.get_user_dict(self.get_user_data(0))
+        registered_user = UserAPITestCase.register_and_confirm(self, user_dict)
         response = self.client.get(url_for("api_blueprint.get_user", user_id=registered_user.id))
         self.assertEqual(response.status_code, 200)
         data = response.get_data()
@@ -88,13 +87,14 @@ class UserAPITestCase(unittest.TestCase):
         data = json.loads(data)
         self.assertIn("Error", data)
         self.assertEqual(data["Error"],
-                        "JSON data is empty. To update user, send PUT request with username, [email] and [password].")
+                         "JSON data is empty. To update user, send PUT request with username, [email] and [password].")
 
     def test_update_user_username(self):
         # Test udpate_user with only username
         user_data = self.get_user_data(0)
         user_dict = self.get_user_dict(user_data)
-        registered_user = auth_handler.register(user_dict)
+        registered_user_dict = UserAPITestCase.register_user(self, user_dict)
+        registered_user = db_util.get_user(registered_user_dict["id"])
         confirmed = registered_user.confirmed
 
         # Update user.
@@ -114,7 +114,8 @@ class UserAPITestCase(unittest.TestCase):
         # Test udpate_user with only email
         user_data = self.get_user_data(0)
         user_dict = self.get_user_dict(user_data)
-        registered_user = auth_handler.register(user_dict)
+        registered_user_dict = UserAPITestCase.register_user(self, user_dict)
+        registered_user = db_util.get_user(registered_user_dict["id"])
         confirmed = registered_user.confirmed
 
         # Update user.
@@ -134,7 +135,8 @@ class UserAPITestCase(unittest.TestCase):
         # Test udpate_user with all attributes.
         user_data = self.get_user_data(0)
         user_dict = self.get_user_dict(user_data)
-        registered_user = auth_handler.register(user_dict)
+        registered_user_dict = UserAPITestCase.register_user(self, user_dict)
+        registered_user = db_util.get_user(registered_user_dict["id"])
         confirmed = registered_user.confirmed
 
         # Update user.
@@ -156,20 +158,12 @@ class UserAPITestCase(unittest.TestCase):
         # Test password update.
         user_data = self.get_user_data(0)
         user_dict = self.get_user_dict(user_data)
-
-        # Register user.
-        response = self.client.post(url_for("api_auth_blueprint.register"), data=json.dumps(user_dict))
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.get_data())
-
-        # Confirm user account.
-        response = self.client.post(url_for("api_auth_blueprint.confirm", token=data["token"]),
-                                    data=json.dumps(user_dict))
-        self.assertEqual(response.status_code, 200)
+        registered_user = UserAPITestCase.register_and_confirm(self, user_dict)
 
         # Change password.
         user_dict["password"] = "Updated_password"
-        response = self.client.put(url_for("api_blueprint.update_user", user_id=data["id"]), data=json.dumps(user_dict))
+        response = self.client.put(url_for("api_blueprint.update_user", user_id=registered_user.id),
+                                   data=json.dumps(user_dict))
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.get_data())
 
@@ -194,7 +188,7 @@ class UserAPITestCase(unittest.TestCase):
         # Test delete API on existing user.
         user_data = self.get_user_data(0)
         user_dict = self.get_user_dict(user_data)
-        registered_user = auth_handler.register(user_dict)
+        registered_user = UserAPITestCase.register_and_confirm(self, user_dict)
 
         response = self.client.delete(url_for("api_blueprint.delete_user", user_id=registered_user.id))
         self.assertEqual(response.status_code, 200)
@@ -208,7 +202,7 @@ class UserAPITestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
         # Add and delete multiple users.
-        users = [auth_handler.register(self.get_user_dict(self.get_user_data(i))) for i in range(3)]
+        users = [UserAPITestCase.register_and_confirm(self, self.get_user_dict(self.get_user_data(i))) for i in range(3)]
 
         for i in range(3):
             response = self.client.delete(url_for("api_blueprint.delete_user", user_id=users[i].id))
@@ -223,7 +217,7 @@ class UserAPITestCase(unittest.TestCase):
     @staticmethod
     def register_user(test_obj, user_dict):
         # Helper function to register a user.
-        response = test_obj.client.post(url_for("api_blueprint.register"), data=json.dumps(user_dict))
+        response = test_obj.client.post(url_for("api_auth_blueprint.register"), data=json.dumps(user_dict))
         test_obj.assertEqual(response.status_code, 200)
 
         data = response.get_data(as_text=True)
@@ -235,7 +229,7 @@ class UserAPITestCase(unittest.TestCase):
         test_obj.assertEqual(data["username"], user_dict["username"])
         test_obj.assertEqual(data["email"], user_dict["email"])
         test_obj.assertEqual(data["message"],
-                         "To confirm your account, send a POST request to the given url, with your email and password.")
+                             "To confirm your account, send a POST request to the given url, with your email and password.")
 
         registered_user = db_util.get_user(data["id"])
         test_obj.assertFalse(registered_user.confirmed)
@@ -246,6 +240,7 @@ class UserAPITestCase(unittest.TestCase):
     def register_and_confirm(test_obj, user_dict):
         # Helper function to register a user AND confirm the user.
         data = UserAPITestCase.register_user(test_obj, user_dict)
+        registered_user = db_util.get_user(data["id"])
         token = data["token"]
 
         response = test_obj.client.post(url_for("api_auth_blueprint.confirm", token=token), data=json.dumps(user_dict))
@@ -256,8 +251,6 @@ class UserAPITestCase(unittest.TestCase):
         data = json.loads(data)
         test_obj.assertIn("message", data)
         test_obj.assertEqual(data["message"], "You have successfully verified your account.")
-
-        registered_user = db_util.get_user(data["id"])
         test_obj.assertTrue(registered_user.confirmed)
 
-        return registered_user.to_json()
+        return registered_user
